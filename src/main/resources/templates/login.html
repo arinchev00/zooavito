@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>Вход в систему</title>
+    <style>
+        .container {
+            text-align: left;
+        }
+        h1, h2 {
+            text-align: left;
+        }
+        .text-menu {
+            text-align: center;
+        }
+        .form-signin {
+            max-width: 400px;
+            margin: 0;
+        }
+        .has-error .form-control {
+            border-color: #dc3545;
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="row py-2">
+        <div class="col-12">
+            <h1>Поздравлятор</h1>
+        </div>
+
+        <div class="col-12">
+            <h2>Вход в систему</h2>
+        </div>
+
+        <div class="col-12">
+            <form method="post" th:action="@{/login}" class="form-signin">
+                <div th:if="${param.error}" class="alert alert-danger">
+                    Неправильное имя пользователя или пароль
+                </div>
+                <div th:if="${param.logout}" class="alert alert-success">
+                    Вы успешно вышли из системы
+                </div>
+
+                <div class="form-group">
+                    <label for="username">Имя пользователя</label>
+                    <input type="text" id="username" name="username" class="form-control"
+                           placeholder="Введите имя пользователя" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <input type="password" id="password" name="password" class="form-control"
+                           placeholder="Введите пароль" required>
+                </div>
+
+<!--                <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Войти</button>
+
+                <div class="mt-3">
+                    <p>Нет аккаунта? <a th:href="@{/registration}">Зарегистрироваться</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="text-menu">
+    <h2>Текстовое меню</h2>
+    <ul>
+        <li><a href="/api/menu/all">Показать весь список пользователей</a></li>
+        <li><a href="/api/menu/create">Добавить нового пользователя</a></li>
+    </ul>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+</html>

@@ -23,22 +23,27 @@ public class SecurityServiceImpl implements SecurityService{
 
     @Override
     public String findLoggedInFullName() {
-        Object userDetails = SecurityContextHolder.getContext().getAuthentication().getDetails();
-        if(userDetails instanceof UserDetails){
-            return ((UserDetails) userDetails).getUsername();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(principal instanceof UserDetails){
+            return ((UserDetails) principal).getUsername();
         }
         return null;
     }
 
     @Override
     public void autoLogin(String fullName, String password) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(fullName);
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
-        authenticationManager.authenticate(authenticationToken);
-        if(authenticationToken.isAuthenticated()){
-            SecurityContextHolder.getContext().setAuthentication((authenticationToken));
-            logger.debug(String .format("Автологин успешно выполнен пользователем ", fullName));
+        try {
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(fullName, password);
+
+            authenticationManager.authenticate(authenticationToken);
+
+            if(authenticationToken.isAuthenticated()){
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                logger.debug(String.format("Автологин успешно выполнен пользователем %s", fullName));
+            }
+        } catch (Exception e) {
+            logger.error("Ошибка при автологине: " + e.getMessage());
         }
     }
 }

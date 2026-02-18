@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"/>
+    <title>Административная панель</title>
+    <style>
+        /* Выравнивание текста по левому краю */
+        .container {
+            text-align: left;
+        }
+
+        /* Выравнивание заголовков по левому краю */
+        h1, h2 {
+            text-align: left;
+        }
+
+        /* Выравнивание текстового меню по центру */
+        .text-menu {
+            text-align: center;
+        }
+
+        /* Стили для формы выхода */
+        #logoutForm {
+            display: none;
+        }
+
+        .logout-link {
+            cursor: pointer;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .logout-link:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="row py-2">
+        <div class="col-12">
+            <h1>Поздравлятор</h1>
+        </div>
+
+        <div class="col-12">
+            <div th:if="${#authentication != null and #authentication.name != null}">
+                <!-- Скрытая форма для выхода -->
+                <form id="logoutForm" method="post" action="#" th:action="@{/logout}">
+                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                </form>
+
+                <h2>Административная панель -
+                    <span th:text="${#authentication.name}"></span> |
+                    <a class="logout-link" onclick="document.forms['logoutForm'].submit()">Выйти</a>
+                </h2>
+
+                <div class="mt-4">
+                    <h3>Доступные действия</h3>
+                    <ul>
+                        <li><a href="/api/menu/all">Управление пользователями</a></li>
+                        <li><a href="/api/menu/create">Настройки системы</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div th:if="${#authentication == null or #authentication.name == null}" class="alert alert-warning">
+                <h3>Доступ запрещен</h3>
+                <p>Пожалуйста, <a href="/login">войдите в систему</a> для доступа к административной панели.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-menu">
+    <h2>Текстовое меню</h2>
+    <ul>
+        <li><a href="/api/menu/all">Показать весь список пользователей, добавленных в приложение</a></li>
+        <li><a href="/api/menu/create">Добавить нового пользователя</a></li>
+    </ul>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+</body>
+</html>
