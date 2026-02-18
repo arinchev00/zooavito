@@ -31,16 +31,16 @@ public class SecurityServiceImpl implements SecurityService{
     }
 
     @Override
-    public void autoLogin(String fullName, String password) {
+    public void autoLogin(String email, String password) {
         try {
             UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(fullName, password);
+                    new UsernamePasswordAuthenticationToken(email, password);
 
             authenticationManager.authenticate(authenticationToken);
 
             if(authenticationToken.isAuthenticated()){
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                logger.debug(String.format("Автологин успешно выполнен пользователем %s", fullName));
+                logger.debug(String.format("Автологин успешно выполнен пользователем %s", email));
             }
         } catch (Exception e) {
             logger.error("Ошибка при автологине: " + e.getMessage());

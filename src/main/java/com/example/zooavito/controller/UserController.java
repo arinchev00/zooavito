@@ -41,7 +41,7 @@ public class UserController {
         }
 
         userService.save(userForm);
-        securityService.autoLogin(userForm.getFullName(), userForm.getConfirmPassword());
+        securityService.autoLogin(userForm.getEmail(), userForm.getConfirmPassword());
         return "redirect:/welcome";
     }
 

@@ -22,10 +22,9 @@ public class UserValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         User user = (User) target;
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "fullName", "Required");
 
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "email", "Required");
-        if(userService.findByFullName(user.getEmail()) != null){
+        if(userService.findByEmail(user.getEmail()) != null){
             errors.rejectValue("email", "DuplicateEmail");
         }
 
