@@ -7,6 +7,7 @@ import com.example.zooavito.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,10 +27,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public void save(User user) {
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+
+        Role role = roleRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
         Set<Role> roles = new HashSet<>();
-        Role role = roleRepository.findById(1L).orElseThrow(() -> new RuntimeException("Role not found"));
         roles.add(role);
         user.setRoles(roles);
+
         userRepository.save(user);
     }
 
@@ -37,5 +42,4 @@ public class UserServiceImpl implements UserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-
 }

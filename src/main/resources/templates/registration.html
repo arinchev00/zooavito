@@ -100,9 +100,14 @@
             <div class="input-group-prepend">
               <span class="input-group-text"><i class="fas fa-phone"></i></span>
             </div>
-            <input type="tel" id="telephoneNumber" th:field="*{telephoneNumber}" class="form-control"
+            <input type="tel"
+                   id="telephoneNumber"
+                   name="telephoneNumber"
+                   th:field="*{telephoneNumber}"
+                   class="form-control"
                    placeholder="+7 (999) 123-45-67"
-                   data-inputmask="'mask': '+9 (999) 999-99-99'"/>
+                   maxlength="18"
+                   oninput="formatPhoneNumber(this)"/>
           </div>
           <small class="form-text text-muted">Формат: +7 (999) 123-45-67</small>
           <span class="error-message" th:if="${#fields.hasErrors('telephoneNumber')}"
@@ -157,5 +162,55 @@
         integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
         crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.8/jquery.inputmask.min.js"></script>
+<script>
+  function formatPhoneNumber(input) {
+      // Удаляем все не-цифры
+      let numbers = input.value.replace(/\D/g, '');
+
+      // Если первая цифра 7 или 8, заменяем на +7
+      if (numbers.length > 0) {
+          if (numbers[0] === '8' || numbers[0] === '7') {
+              numbers = '7' + numbers.substring(1);
+          }
+
+          // Форматируем
+          let formatted = '';
+
+          if (numbers.length > 0) {
+              formatted = '+7';
+
+              if (numbers.length > 1) {
+                  formatted += ' (' + numbers.substring(1, 4);
+              }
+              if (numbers.length >= 5) {
+                  formatted += ') ' + numbers.substring(4, 7);
+              }
+              if (numbers.length >= 8) {
+                  formatted += '-' + numbers.substring(7, 9);
+              }
+              if (numbers.length >= 10) {
+                  formatted += '-' + numbers.substring(9, 11);
+              }
+          }
+
+          input.value = formatted;
+
+          // Сохраняем оригинальное значение (только цифры) в data-атрибуте
+          input.dataset.cleanNumber = numbers;
+      } else {
+          input.value = '';
+          input.dataset.cleanNumber = '';
+      }
+  }
+
+  // При отправке формы можно использовать cleanNumber
+  document.querySelector('form').addEventListener('submit', function(e) {
+      let phoneInput = document.getElementById('telephoneNumber');
+      if (phoneInput && phoneInput.dataset.cleanNumber) {
+          // Опционально: можно отправить только цифры
+          // phoneInput.value = phoneInput.dataset.cleanNumber;
+      }
+  });
+</script>
 </body>
 </html>

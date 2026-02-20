@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,7 +23,7 @@ public class SecurityServiceImpl implements SecurityService{
     private UserDetailsService userDetailsService;
 
     @Override
-    public String findLoggedInFullName() {
+    public String findLoggedInEmail() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if(principal instanceof UserDetails){
             return ((UserDetails) principal).getUsername();
@@ -33,17 +34,14 @@ public class SecurityServiceImpl implements SecurityService{
     @Override
     public void autoLogin(String email, String password) {
         try {
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(email, password);
-
-            authenticationManager.authenticate(authenticationToken);
-
-            if(authenticationToken.isAuthenticated()){
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                logger.debug(String.format("Автологин успешно выполнен пользователем %s", email));
-            }
+            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+            // Используем исходный пароль, не зашифрованный!
+            UsernamePasswordAuthenticationToken token =
+                    new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+            Authentication authentication = authenticationManager.authenticate(token);
+            // ...
         } catch (Exception e) {
-            logger.error("Ошибка при автологине: " + e.getMessage());
+            logger.error("Ошибка автологина: " + e.getMessage());
         }
     }
 }

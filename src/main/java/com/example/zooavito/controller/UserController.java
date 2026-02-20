@@ -34,6 +34,12 @@ public class UserController {
     @PostMapping("/registration")
     public String registration(@ModelAttribute("userForm") User userForm,
                                BindingResult bindingResult, Model model) {
+
+        // Проверка на существующий email
+        if (userService.findByEmail(userForm.getEmail()) != null) {
+            bindingResult.rejectValue("email", "DuplicateEmail");
+        }
+
         userValidator.validate(userForm, bindingResult);
 
         if (bindingResult.hasErrors()) {
@@ -41,7 +47,11 @@ public class UserController {
         }
 
         userService.save(userForm);
-        securityService.autoLogin(userForm.getEmail(), userForm.getConfirmPassword());
+
+        // Сохраняем исходный пароль для автологина
+        String rawPassword = userForm.getPassword();
+        securityService.autoLogin(userForm.getEmail(), rawPassword);
+
         return "redirect:/welcome";
     }
 
