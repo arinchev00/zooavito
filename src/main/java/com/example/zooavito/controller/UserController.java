@@ -5,6 +5,8 @@ import com.example.zooavito.service.SecurityService;
 import com.example.zooavito.service.UserService;
 import com.example.zooavito.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -35,6 +37,8 @@ public class UserController {
     public String registration(@ModelAttribute("userForm") User userForm,
                                BindingResult bindingResult, Model model) {
 
+        String rawPassword = userForm.getPassword();
+
         // Проверка на существующий email
         if (userService.findByEmail(userForm.getEmail()) != null) {
             bindingResult.rejectValue("email", "DuplicateEmail");
@@ -47,9 +51,6 @@ public class UserController {
         }
 
         userService.save(userForm);
-
-        // Сохраняем исходный пароль для автологина
-        String rawPassword = userForm.getPassword();
         securityService.autoLogin(userForm.getEmail(), rawPassword);
 
         return "redirect:/welcome";
@@ -70,7 +71,23 @@ public class UserController {
 
     @GetMapping({"/", "/welcome"})
     public String welcome(Model model) {
-        return "welcome";
+        // Получаем текущую аутентификацию
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // Проверяем, что пользователь аутентифицирован и это не аноним
+        if (auth != null && auth.isAuthenticated() &&
+                !(auth.getPrincipal() instanceof String && auth.getPrincipal().equals("anonymousUser"))) {
+
+            // Проверяем роль ADMIN
+            boolean isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+
+            if (isAdmin) {
+                return "redirect:/admin"; // Админ идет на админку
+            }
+        }
+
+        return "welcome"; // Обычный пользователь или неавторизованный идет на welcome
     }
 
     @GetMapping("/admin")

@@ -13,35 +13,29 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"/>
     <title>Административная панель</title>
     <style>
-        /* Выравнивание текста по левому краю */
         .container {
             text-align: left;
         }
-
-        /* Выравнивание заголовков по левому краю */
         h1, h2 {
             text-align: left;
         }
-
-        /* Выравнивание текстового меню по центру */
         .text-menu {
             text-align: center;
         }
-
-        /* Стили для формы выхода */
         #logoutForm {
             display: none;
         }
-
-        .logout-link {
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
             cursor: pointer;
-            color: #007bff;
-            text-decoration: none;
+            font-size: 14px;
         }
-
-        .logout-link:hover {
-            text-decoration: underline;
-            color: #0056b3;
+        .logout-btn:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
@@ -51,44 +45,43 @@
 <div class="container">
     <div class="row py-2">
         <div class="col-12">
-            <h1>Поздравлятор</h1>
+            <h1>ZooAvito</h1>
         </div>
 
-        <div class="col-12">
-            <div th:if="${#authentication != null and #authentication.name != null}">
-                <!-- Скрытая форма для выхода -->
-                <form id="logoutForm" method="post" action="#" th:action="@{/logout}">
-                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                </form>
+        <div class="col-12" sec:authorize="hasRole('ADMIN')">
+            <!-- Скрытая форма для выхода -->
+            <form id="logoutForm" method="post" th:action="@{/logout}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            </form>
 
-                <h2>Административная панель -
-                    <span th:text="${#authentication.name}"></span> |
-                    <a class="logout-link" onclick="document.forms['logoutForm'].submit()">Выйти</a>
-                </h2>
+            <!-- Только цвет изменен с alert-primary на alert-success -->
+            <div class="alert alert-success mt-3">
+                <h2>Панель Администратора</h2>
+                <p>Добро пожаловать, <strong sec:authentication="name"></strong>! Вы вошли как администратор.</p>
 
-                <div class="mt-4">
-                    <h3>Доступные действия</h3>
-                    <ul>
-                        <li><a href="/api/menu/all">Управление пользователями</a></li>
-                        <li><a href="/api/menu/create">Настройки системы</a></li>
-                    </ul>
-                </div>
+                <button class="logout-btn" onclick="document.getElementById('logoutForm').submit()">
+                    <i class="fas fa-sign-out-alt"></i> Выйти
+                </button>
             </div>
 
-            <div th:if="${#authentication == null or #authentication.name == null}" class="alert alert-warning">
+            <div class="mt-4">
+                <h3>Доступные действия</h3>
+                <ul>
+                    <li><a href="/api/menu/all">Просмотреть список пользователей</a></li>
+                    <li><a href="/api/menu/create">Просмотреть список объявлений</a></li>
+                    <li><a href="/api/menu/create">Выдать пользователю права администратора</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-12" sec:authorize="!hasRole('ADMIN')">
+            <div class="alert alert-danger">
                 <h3>Доступ запрещен</h3>
-                <p>Пожалуйста, <a href="/login">войдите в систему</a> для доступа к административной панели.</p>
+                <p>У вас нет прав для просмотра этой страницы.</p>
+                <p><a href="/welcome">Вернуться на главную</a></p>
             </div>
         </div>
     </div>
-</div>
-
-<div class="text-menu">
-    <h2>Текстовое меню</h2>
-    <ul>
-        <li><a href="/api/menu/all">Показать весь список пользователей, добавленных в приложение</a></li>
-        <li><a href="/api/menu/create">Добавить нового пользователя</a></li>
-    </ul>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

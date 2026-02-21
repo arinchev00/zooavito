@@ -32,10 +32,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/welcome").permitAll()
+                        .requestMatchers("/", "/welcome").permitAll()  // Все могут зайти на welcome
+                        .requestMatchers("/admin").hasRole("ADMIN")    // Только ADMIN на admin
                         .requestMatchers("/registration").permitAll()
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
