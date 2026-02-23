@@ -2,11 +2,16 @@ package com.example.zooavito.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
+import java.util.Set;
 
 @Entity
 @Table(name="image")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Image {
 
     @Id
@@ -26,7 +31,23 @@ public class Image {
     @Lob
     private byte[] bytes;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @Transient
+    private String base64Image;
+
+    @ManyToOne
     @JoinColumn(name = "announcement_id")
     private Announcement announcement;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Image image = (Image) o;
+        return id != null && id.equals(image.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

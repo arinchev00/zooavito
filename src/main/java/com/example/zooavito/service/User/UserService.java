@@ -1,4 +1,4 @@
-package com.example.zooavito.service;
+package com.example.zooavito.service.User;
 
 import com.example.zooavito.model.User;
 

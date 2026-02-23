@@ -1,4 +1,4 @@
-package com.example.zooavito.service;
+package com.example.zooavito.service.Security;
 
 public interface SecurityService {
     String findLoggedInEmail();

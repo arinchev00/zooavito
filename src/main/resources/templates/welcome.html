@@ -11,95 +11,432 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"/>
-  <title>Добро пожаловать</title>
+  <title>ZooAvito - Доска объявлений</title>
   <style>
-    /* Выравнивание текста по левому краю */
-    .container {
-        text-align: left;
+    /* Общие стили */
+    body {
+      background-color: #f8f9fa;
     }
 
-    /* Выравнивание заголовков по левому краю */
-    h1, h2 {
-        text-align: left;
+    /* Шапка сайта */
+    .navbar-custom {
+      background-color: #28a745;
+      padding: 15px 0;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
     }
 
-    /* Выравнивание текстового меню по центру */
-    .text-menu {
-        text-align: center;
-        margin-top: 30px;
+    .navbar-custom .navbar-brand {
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
     }
 
-    /* Стили для кнопки выхода */
+    .navbar-custom .navbar-brand i {
+      font-size: 32px;
+      margin-right: 10px;
+    }
+
+    .navbar-custom .nav-link {
+      color: white !important;
+      font-weight: 500;
+      margin: 0 10px;
+    }
+
+    .navbar-custom .nav-link:hover {
+      color: rgba(255,255,255,.8) !important;
+    }
+
+    /* Кнопка подачи объявления - ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ */
+    .btn-add-ad {
+      background-color: #ffc107;
+      color: #333;
+      font-weight: bold;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+    }
+
+    .btn-add-ad:hover {
+      background-color: #e0a800;
+      color: #333;
+    }
+
+    /* Поисковая строка - ДЛЯ ВСЕХ */
+    .search-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
+      margin-bottom: 30px;
+    }
+
+    .search-input {
+      border: 2px solid #28a745;
+      border-right: none;
+      border-radius: 20px 0 0 20px;
+      height: 45px;
+    }
+
+    .search-btn {
+      background-color: #28a745;
+      color: white;
+      border: 2px solid #28a745;
+      border-radius: 0 20px 20px 0;
+      height: 45px;
+      padding: 0 20px;
+    }
+
+    .search-btn:hover {
+      background-color: #218838;
+      border-color: #218838;
+    }
+
+    /* Карточки категорий - ДЛЯ ВСЕХ */
+    .category-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
+      transition: transform 0.3s;
+      height: 100%;
+    }
+
+    .category-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0,0,0,.15);
+    }
+
+    .category-card i {
+      font-size: 48px;
+      color: #28a745;
+      margin-bottom: 15px;
+    }
+
+    .category-card h4 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .category-card p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Последние объявления - ДЛЯ ВСЕХ */
+    .ad-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
+      transition: transform 0.3s;
+    }
+
+    .ad-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,.15);
+    }
+
+    .ad-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .ad-card h5 {
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .ad-card .price {
+      color: #28a745;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .ad-card .location {
+      color: #666;
+      font-size: 14px;
+    }
+
+    /* Стили для кнопки выхода - ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ */
     .logout-btn {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 10px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
     }
 
     .logout-btn:hover {
-        background-color: #c82333;
-        text-decoration: none;
-        color: white;
+      background-color: #c82333;
+      color: white;
     }
 
     /* Скрытая форма для выхода */
     #logoutForm {
         display: none;
     }
+
+    /* Футер - ДЛЯ ВСЕХ */
+    .footer {
+      background-color: #333;
+      color: white;
+      padding: 30px 0;
+      margin-top: 50px;
+    }
+
+    .footer a {
+      color: #28a745;
+    }
+
+    .footer a:hover {
+      color: #218838;
+    }
+
+    /* Информация о пользователе - ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ */
+    .user-info {
+      color: white;
+      display: flex;
+      align-items: center;
+    }
+
+    .user-info i {
+      margin-right: 5px;
+      font-size: 16px;
+    }
+
+    .user-name {
+      font-weight: 500;
+      margin-right: 5px;
+    }
   </style>
 </head>
 
 <body>
 
-<div class="container">
-  <div class="row py-2">
-    <div class="col-12">
-      <h1>ZooAvito</h1>
-    </div>
+<!-- ШАПКА САЙТА (доступна всем) -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <i class="fas fa-paw"></i>
+      ZooAvito
+    </a>
 
-    <!-- Используем sec:authorize для проверки аутентификации -->
-    <div class="col-12" sec:authorize="isAuthenticated()">
-      <!-- Скрытая форма для выхода -->
-      <form id="logoutForm" method="post" th:action="@{/logout}">
-        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-      </form>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <div class="alert alert-success mt-3" role="alert">
-        <h2>Добро пожаловать, <span sec:authentication="name"></span>!</h2>
-        <p class="mb-0">Вы успешно вошли в систему.</p>
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/">Главная</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/api/menu/all">Объявления</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/categories">Категории</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/about">О проекте</a>
+        </li>
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+          <a class="nav-link" href="/admin">
+            <i class="fas fa-cog"></i> Админка
+          </a>
+        </li>
+      </ul>
 
-        <!-- Отдельная кнопка выхода -->
-        <button class="logout-btn mt-3" onclick="document.getElementById('logoutForm').submit()">
+      <!-- БЛОК ДЛЯ НЕАВТОРИЗОВАННЫХ ПОЛЬЗОВАТЕЛЕЙ -->
+      <div sec:authorize="!isAuthenticated()">
+        <a href="/login" class="btn btn-outline-light mr-2">Вход</a>
+        <a href="/registration" class="btn btn-light">Регистрация</a>
+      </div>
+
+      <!-- БЛОК ДЛЯ АВТОРИЗОВАННЫХ ПОЛЬЗОВАТЕЛЕЙ -->
+      <div sec:authorize="isAuthenticated()" class="d-flex align-items-center">
+        <div class="user-info">
+          <i class="fas fa-user-circle"></i>
+          <span class="user-name" sec:authentication="name"></span>
+        </div>
+        <!-- Скрытая форма для выхода -->
+        <form id="logoutForm" method="post" th:action="@{/logout}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        </form>
+        <button class="logout-btn" onclick="document.getElementById('logoutForm').submit()">
           <i class="fas fa-sign-out-alt"></i> Выйти
         </button>
       </div>
-
-      <div class="mt-4">
-        <h3>Доступные действия</h3>
-        <ul>
-          <li><a href="/api/menu/all">Просмотреть список пользователей</a></li>
-          <li><a href="/api/menu/create">Просмотреть список объявлений</a></li>
-          <li sec:authorize="hasRole('ADMIN')"><a href="/admin">Административная панель</a></li>
-        </ul>
-      </div>
     </div>
+  </div>
+</nav>
 
-    <!-- Для неавторизованных пользователей -->
-    <div class="col-12" sec:authorize="!isAuthenticated()">
-      <div class="alert alert-warning mt-3">
-        <h3>Вы не авторизованы</h3>
-        <p>Пожалуйста, <a href="/login">войдите в систему</a> или
-          <a href="/registration">зарегистрируйтесь</a> для доступа к функциям приложения.</p>
+<!-- ОСНОВНОЙ КОНТЕНТ (доступен всем) -->
+<div class="container">
+
+  <!-- Поисковая строка (для всех) -->
+  <div class="search-container">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <div class="input-group">
+          <input type="text" class="form-control search-input" placeholder="Что ищете? Например, 'щенки' или 'аквариум'...">
+          <div class="input-group-append">
+            <button class="btn search-btn" type="button">
+              <i class="fas fa-search"></i> Поиск
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Кнопка подачи объявления - ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ -->
+      <div class="col-md-4 text-md-right mt-3 mt-md-0" sec:authorize="isAuthenticated()">
+        <a href="/announcement/create" class="btn btn-add-ad">
+          <i class="fas fa-plus-circle"></i> Подать объявление
+        </a>
+      </div>
+
+      <!-- Для неавторизованных просто пустой блок (или можно добавить текст) -->
+      <div class="col-md-4 text-md-right mt-3 mt-md-0" sec:authorize="!isAuthenticated()">
+        <!-- Пусто или можно добавить информационный текст -->
       </div>
     </div>
   </div>
+
+  <!-- Популярные категории (для всех) -->
+  <h2 class="mb-4">Популярные категории</h2>
+  <div class="row mb-5">
+    <div class="col-md-3 col-sm-6 mb-4">
+      <a href="/category/dogs" style="text-decoration: none; color: inherit;">
+        <div class="category-card">
+          <i class="fas fa-dog"></i>
+          <h4>Собаки</h4>
+          <p>1 234 объявления</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4">
+      <a href="/category/cats" style="text-decoration: none; color: inherit;">
+        <div class="category-card">
+          <i class="fas fa-cat"></i>
+          <h4>Кошки</h4>
+          <p>987 объявлений</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4">
+      <a href="/category/fish" style="text-decoration: none; color: inherit;">
+        <div class="category-card">
+          <i class="fas fa-fish"></i>
+          <h4>Рыбки</h4>
+          <p>456 объявлений</p>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-4">
+      <a href="/category/birds" style="text-decoration: none; color: inherit;">
+        <div class="category-card">
+          <i class="fas fa-kiwi-bird"></i>
+          <h4>Птицы</h4>
+          <p>345 объявлений</p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Последние объявления (для всех) -->
+  <h2 class="mb-4">Последние объявления</h2>
+  <div class="row">
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <a href="/announcement/1" style="text-decoration: none; color: inherit;">
+        <div class="ad-card">
+          <img src="https://via.placeholder.com/300x200" alt="Объявление">
+          <h5>Щенки лабрадора</h5>
+          <div class="price">15 000 ₽</div>
+          <div class="location"><i class="fas fa-map-marker-alt"></i> Москва</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <a href="/announcement/2" style="text-decoration: none; color: inherit;">
+        <div class="ad-card">
+          <img src="https://via.placeholder.com/300x200" alt="Объявление">
+          <h5>Аквариум 100л</h5>
+          <div class="price">5 000 ₽</div>
+          <div class="location"><i class="fas fa-map-marker-alt"></i> Санкт-Петербург</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <a href="/announcement/3" style="text-decoration: none; color: inherit;">
+        <div class="ad-card">
+          <img src="https://via.placeholder.com/300x200" alt="Объявление">
+          <h5>Попугай корелла</h5>
+          <div class="price">3 500 ₽</div>
+          <div class="location"><i class="fas fa-map-marker-alt"></i> Казань</div>
+        </div>
+      </a>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+      <a href="/announcement/4" style="text-decoration: none; color: inherit;">
+        <div class="ad-card">
+          <img src="https://via.placeholder.com/300x200" alt="Объявление">
+          <h5>Корм для кошек</h5>
+          <div class="price">1 200 ₽</div>
+          <div class="location"><i class="fas fa-map-marker-alt"></i> Екатеринбург</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Ссылка на все объявления (для всех) -->
+  <div class="text-center mb-5">
+    <a href="/api/menu/all" class="btn btn-outline-success btn-lg">
+      Смотреть все объявления <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+  </div>
 </div>
 
+<!-- ФУТЕР (для всех) -->
+<footer class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h5>ZooAvito</h5>
+        <p>Доска объявлений для любителей животных. Найдите своего питомца или продайте зоотовары.</p>
+      </div>
+      <div class="col-md-4">
+        <h5>Разделы</h5>
+        <ul class="list-unstyled">
+          <li><a href="/">Главная</a></li>
+          <li><a href="/api/menu/all">Объявления</a></li>
+          <li><a href="/categories">Категории</a></li>
+          <li><a href="/about">О проекте</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h5>Контакты</h5>
+        <ul class="list-unstyled">
+          <li><i class="fas fa-envelope mr-2"></i> support@zooavito.ru</li>
+          <li><i class="fas fa-phone mr-2"></i> 8 (800) 123-45-67</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="bg-light">
+    <p class="text-center mb-0">© 2026 ZooAvito. Все права защищены.</p>
+  </div>
+</footer>
+
+<!-- Скрипты -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
         crossorigin="anonymous"></script>

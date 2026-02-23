@@ -1,7 +1,7 @@
 package com.example.zooavito.validator;
 
 import com.example.zooavito.model.User;
-import com.example.zooavito.service.UserService;
+import com.example.zooavito.service.User.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;

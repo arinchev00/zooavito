@@ -1,8 +1,8 @@
 package com.example.zooavito.controller;
 
 import com.example.zooavito.model.User;
-import com.example.zooavito.service.SecurityService;
-import com.example.zooavito.service.UserService;
+import com.example.zooavito.service.Security.SecurityService;
+import com.example.zooavito.service.User.UserService;
 import com.example.zooavito.validator.UserValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

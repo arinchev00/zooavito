@@ -6,45 +6,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Set;
-
 @Entity
-@Table(name="roles")
+@Table(name = "categories")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
-
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
 
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    @ManyToMany(mappedBy = "categories")
+    private Set<Announcement> announcements = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Role role = (Role) o;
-        return id != null && Objects.equals(id, role.id);
+        Category category = (Category) o;
+        return id != null && id.equals(category.id);
     }
 
     @Override
     public int hashCode() {
-        // Всегда возвращаем константу для Hibernate коллекций
         return getClass().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Role{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                '}';
     }
 }

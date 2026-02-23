@@ -2,14 +2,18 @@ package com.example.zooavito.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "announcement")
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Announcement {
 
     @Id
@@ -18,17 +22,35 @@ public class Announcement {
 
     private String title;
 
-    private int prace;
+    private int price;
 
     private String description;
 
-    private String category;
-
     private String comment;
 
+    @Column(name = "date_of_publication")
     private LocalDate DateOfPublication;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "announcement")
-    private Set<Image> images;
+    @ManyToMany
+    @JoinTable(name = "announcement_categories",
+            joinColumns = @JoinColumn(name = "announcement_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private Set<Category> categories = new HashSet<>();
+
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Image> images = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Announcement that = (Announcement) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 
 }
