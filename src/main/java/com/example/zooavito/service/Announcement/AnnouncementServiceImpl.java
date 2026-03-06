@@ -1,143 +1,122 @@
 package com.example.zooavito.service.Announcement;
 
 import com.example.zooavito.model.Announcement;
+import com.example.zooavito.model.Category;
 import com.example.zooavito.model.Image;
 import com.example.zooavito.repository.AnnouncementRepository;
 import com.example.zooavito.repository.CategoryRepository;
 import com.example.zooavito.repository.ImageRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.zooavito.request.AnnouncementRequest;
+import com.example.zooavito.response.AnnouncementResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class AnnouncementServiceImpl implements AnnouncementService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnnouncementServiceImpl.class);
-
-    @Autowired
-    private AnnouncementRepository announcementRepository;
-
-    @Autowired
-    private ImageRepository imageRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final AnnouncementRepository announcementRepository;
+    private final ImageRepository imageRepository;
+    private final CategoryRepository categoryRepository;
 
     @Override
     @Transactional
-    public void create(Announcement announcement, MultipartFile file) throws IOException {
-        try {
-            logger.info("=== СОЗДАНИЕ ОБЪЯВЛЕНИЯ ===");
-            logger.info("Заголовок: {}", announcement.getTitle());
+    public AnnouncementResponse createAnnouncement(AnnouncementRequest request, @Nullable MultipartFile file) throws IOException {
+        log.info("=== СОЗДАНИЕ ОБЪЯВЛЕНИЯ ===");
+        log.info("Заголовок: {}", request.getTitle());
 
-            // Сначала сохраняем объявление, чтобы получить ID
-            Announcement savedAnnouncement = announcementRepository.save(announcement);
+        // Создаем объявление
+        Announcement announcement = new Announcement();
+        announcement.setTitle(request.getTitle());
+        announcement.setPrice(request.getPrice());
+        announcement.setDescription(request.getDescription());
+        announcement.setComment(request.getComment());
+        announcement.setDateOfPublication(LocalDate.now());
 
-            if (file != null && !file.isEmpty()) {
-                logger.info("Обработка изображения: {}", file.getOriginalFilename());
+        // Добавляем категории
+        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
+            Set<Category> categories = new HashSet<>();
+            for (Long categoryId : request.getCategoryIds()) {
+                Category category = categoryRepository.findById(categoryId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Категория не найдена: " + categoryId
+                        ));
+                categories.add(category);
+            }
+            announcement.setCategories(categories);
+        }
 
-                Image image = toImageEntity(file);
-                image.setAnnouncement(savedAnnouncement);
+        // Сохраняем объявление и ПРОВЕРЯЕМ ID
+        Announcement savedAnnouncement = announcementRepository.saveAndFlush(announcement);
+        log.info("Объявление сохранено. ID: {}, exists in DB: {}",
+                savedAnnouncement.getId(),
+                announcementRepository.existsById(savedAnnouncement.getId()));
 
-                if (savedAnnouncement.getImages() == null) {
-                    savedAnnouncement.setImages(new HashSet<>());
-                }
+        // Обрабатываем изображение
+        if (file != null && !file.isEmpty()) {
+            log.info("Обработка изображения: {}", file.getOriginalFilename());
 
-                savedAnnouncement.getImages().add(image);
+            Image image = convertToImage(file);
+            image.setAnnouncement(savedAnnouncement);
 
-                // Сохраняем объявление снова, чтобы каскадно сохранилось изображение
-                announcementRepository.save(savedAnnouncement);
+            // ПРОВЕРЯЕМ, что ID объявления не null
+            if (savedAnnouncement.getId() == null) {
+                log.error("ID объявления null! Невозможно сохранить изображение");
+                throw new RuntimeException("ID объявления не сгенерирован");
             }
 
-            logger.info("✅ Объявление успешно сохранено с ID: {}", savedAnnouncement.getId());
+            // Сохраняем изображение
+            Image savedImage = imageRepository.save(image);
+            log.info("Изображение сохранено с ID: {}, для announcement_id: {}",
+                    savedImage.getId(), savedImage.getAnnouncement().getId());
 
-        } catch (Exception e) {
-            logger.error("❌ ОШИБКА: {}", e.getMessage());
-            throw e;
+            // Добавляем изображение в коллекцию объявления
+            if (savedAnnouncement.getImages() == null) {
+                savedAnnouncement.setImages(new HashSet<>());
+            }
+            savedAnnouncement.getImages().add(savedImage);
         }
+
+        // Возвращаем финальное состояние
+        Announcement finalAnnouncement = announcementRepository.findById(savedAnnouncement.getId()).orElseThrow();
+        log.info("Объявление с изображениями: {}", finalAnnouncement.getImages().size());
+
+        return AnnouncementResponse.from(finalAnnouncement);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Announcement findById(Integer id) {
-        try {
-            logger.info("=== ПОИСК ОБЪЯВЛЕНИЯ ===");
-            logger.info("ID: {}", id);
-
-            // Конвертируем Integer в Long (так как в модели Announcement id типа Long)
-            Long longId = Long.valueOf(id);
-            Announcement announcement = announcementRepository.findById(longId).orElse(null);
-
-            if (announcement != null) {
-                logger.info("✅ Объявление найдено:");
-                logger.info("   Заголовок: {}", announcement.getTitle());
-                logger.info("   Цена: {}", announcement.getPrice());
-                logger.info("   Описание: {}", announcement.getDescription());
-                logger.info("   Комментарий: {}", announcement.getComment());
-                logger.info("   Дата публикации: {}", announcement.getDateOfPublication());
-
-                // Информация о категориях
-                int categoriesCount = announcement.getCategories() != null ?
-                        announcement.getCategories().size() : 0;
-                logger.info("   Категорий: {}", categoriesCount);
-
-                // Информация об изображениях
-                int imagesCount = announcement.getImages() != null ?
-                        announcement.getImages().size() : 0;
-                logger.info("   Изображений: {}", imagesCount);
-
-                if (imagesCount > 0) {
-                    logger.info("   Список изображений:");
-                    announcement.getImages().forEach(img ->
-                            logger.info("      - ID: {}, файл: {}",
-                                    img.getId(), img.getOriginalFileName())
-                    );
-                }
-            } else {
-                logger.warn("⚠️ Объявление с ID {} не найдено", id);
-            }
-
-            return announcement;
-
-        } catch (Exception e) {
-            logger.error("❌ ОШИБКА при поиске объявления: {}", e.getMessage());
-            logger.error("Тип ошибки: {}", e.getClass().getSimpleName());
-            e.printStackTrace();
-            throw e;
-        }
+    public AnnouncementResponse getAnnouncementById(Long id) {
+        return announcementRepository.findById(id)
+                .map(AnnouncementResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Объявление не найдено с id: " + id
+                ));
     }
 
-    /**
-     * Конвертирует MultipartFile в сущность Image
-     */
-    private Image toImageEntity(MultipartFile file) throws IOException {
-        try {
-            logger.info("Конвертация файла в Image: {}", file.getOriginalFilename());
+    private Image convertToImage(MultipartFile file) throws IOException {
+        Image image = new Image();
+        image.setName(file.getName());
+        image.setOriginalFileName(file.getOriginalFilename());
+        image.setContentType(file.getContentType());
+        image.setSize(file.getSize());
+        image.setBytes(file.getBytes());
 
-            Image image = new Image();
-            image.setName(file.getName());
-            image.setOriginalFileName(file.getOriginalFilename());
-            image.setContentType(file.getContentType());
-            image.setSize(file.getSize());
-            image.setBytes(file.getBytes());
-
-            logger.info("✅ Изображение сконвертировано:");
-            logger.info("   Имя поля: {}", image.getName());
-            logger.info("   Оригинальное имя: {}", image.getOriginalFileName());
-            logger.info("   Тип: {}", image.getContentType());
-            logger.info("   Размер: {} байт", image.getSize());
-
-            return image;
-
-        } catch (IOException e) {
-            logger.error("❌ ОШИБКА при конвертации изображения: {}", e.getMessage());
-            throw e;
-        }
+        log.info("Изображение сконвертировано: {}", image.getOriginalFileName());
+        return image;
     }
 }

@@ -1,126 +1,61 @@
 package com.example.zooavito.controller;
 
-import com.example.zooavito.model.Announcement;
-import com.example.zooavito.model.Image;
+import com.example.zooavito.config.ApiResponseAnnotations;
+import com.example.zooavito.request.AnnouncementRequest;
+import com.example.zooavito.response.AnnouncementResponse;
 import com.example.zooavito.service.Announcement.AnnouncementService;
-import com.example.zooavito.service.Security.SecurityService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.Base64;
 
-@Controller
-@RequestMapping("/announcement")
+@RestController
+@RequestMapping("/v1/api/announcement")
+@RequiredArgsConstructor
+@Tag(name = "Объявления", description = "API для работы с объявлениями")
+@Slf4j
 public class AnnouncementController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AnnouncementController.class);
+    private final AnnouncementService announcementService;
 
-    @Autowired
-    private AnnouncementService announcementService;
-
-    @Autowired
-    private SecurityService securityService;
-
-    /**
-     * Показать форму создания объявления
-     */
-    @GetMapping("/create")
-    public String showCreateForm(Model model) {
-        logger.info("=== ОТОБРАЖЕНИЕ ФОРМЫ СОЗДАНИЯ ОБЪЯВЛЕНИЯ ===");
-
-        String loggedInEmail = securityService.findLoggedInEmail();
-        logger.info("Текущий пользователь: {}", loggedInEmail);
-
-        Announcement announcement = new Announcement();
-        announcement.setDateOfPublication(LocalDate.now());
-
-        model.addAttribute("announcement", announcement);
-        return "createAnnouncement";
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Создание нового объявления с фото")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Объявление успешно создано")
+    })
+    @ApiResponseAnnotations.CommonPostResponses
+    @ApiResponseAnnotations.UnsupportedMediaResponse
+    public AnnouncementResponse createAnnouncement(
+            @Valid @RequestPart("announcement") AnnouncementRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            Authentication authentication
+    ) throws IOException {
+        log.info("Создание объявления: title={}, hasImage={}",
+                request.getTitle(), image != null);
+        return announcementService.createAnnouncement(request, image);
     }
 
-    /**
-     * Обработка создания объявления
-     */
-    @PostMapping("/create")
-    public String createAnnouncement(
-            @ModelAttribute Announcement announcement,
-            @RequestParam(value = "file", required = false) MultipartFile file,
-            RedirectAttributes redirectAttributes,
-            Model model
-    ) {
-        try {
-            logger.info("=== ОБРАБОТКА СОЗДАНИЯ ОБЪЯВЛЕНИЯ ===");
-            logger.info("Заголовок: {}", announcement.getTitle());
-            logger.info("Цена: {}", announcement.getPrice());
-            logger.info("Описание: {}", announcement.getDescription());
-
-            if (announcement.getDateOfPublication() == null) {
-                announcement.setDateOfPublication(LocalDate.now());
-            }
-
-            announcementService.create(announcement, file);
-
-            logger.info("✅ Объявление успешно создано!");
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "Объявление успешно создано!");
-
-            return "redirect:/announcement/" + announcement.getId();
-
-        } catch (IOException e) {
-            logger.error("❌ Ошибка при загрузке файла: {}", e.getMessage());
-            model.addAttribute("error", "Ошибка при загрузке файла: " + e.getMessage());
-            model.addAttribute("announcement", announcement);
-            return "createAnnouncement";
-        } catch (Exception e) {
-            logger.error("❌ Ошибка при создании объявления: {}", e.getMessage());
-            model.addAttribute("error", "Ошибка при создании объявления: " + e.getMessage());
-            model.addAttribute("announcement", announcement);
-            return "createAnnouncement";
-        }
-    }
-
-    /**
-     * Просмотр конкретного объявления
-     */
     @GetMapping("/{id}")
-    public String viewAnnouncement(@PathVariable Integer id, Model model) {
-        try {
-            logger.info("=== ПРОСМОТР ОБЪЯВЛЕНИЯ ===");
-            logger.info("ID: {}", id);
-
-            Announcement announcement = announcementService.findById(id);
-
-            if (announcement != null) {
-                // Конвертируем изображения в Base64 для отображения
-                if (announcement.getImages() != null && !announcement.getImages().isEmpty()) {
-                    for (Image image : announcement.getImages()) {
-                        if (image.getBytes() != null && image.getBytes().length > 0) {
-                            String base64 = Base64.getEncoder().encodeToString(image.getBytes());
-                            image.setBase64Image(base64);
-                            logger.info("Изображение ID: {} сконвертировано в Base64", image.getId());
-                        }
-                    }
-                }
-
-                model.addAttribute("announcement", announcement);
-                return "announcementDetails";
-            } else {
-                model.addAttribute("error", "Объявление не найдено");
-                return "error";
-            }
-
-        } catch (Exception e) {
-            logger.error("❌ Ошибка при просмотре объявления: {}", e.getMessage());
-            model.addAttribute("error", "Ошибка при загрузке объявления");
-            return "error";
-        }
+    @Operation(summary = "Получить объявление по id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешно",
+                    content = @Content(schema = @Schema(implementation = AnnouncementResponse.class)))
+    })
+    @ApiResponseAnnotations.CommonGetResponses
+    public AnnouncementResponse getAnnouncement(@PathVariable Long id) {
+        return announcementService.getAnnouncementById(id);
     }
 }
