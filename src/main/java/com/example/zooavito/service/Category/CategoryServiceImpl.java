@@ -5,6 +5,7 @@ import com.example.zooavito.repository.CategoryRepository;
 import com.example.zooavito.request.CategoryRequest;
 import com.example.zooavito.response.CategoryResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
@@ -22,6 +24,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
+        log.info("=== СОЗДАНИЕ КАТЕГОРИИ ===");
+        log.info("Название: {}", request.getTitle());
 
         // Проверка на существование категории с таким названием
         if (categoryRepository.findByTitle(request.getTitle()).isPresent()) {
@@ -35,8 +39,9 @@ public class CategoryServiceImpl implements CategoryService {
         category.setTitle(request.getTitle());
 
         Category savedCategory = categoryRepository.save(category);
+        log.info("✅ Категория создана с ID: {}", savedCategory.getId());
 
-        return CategoryResponse.from(savedCategory);
+        return CategoryResponse.from(savedCategory);  // ← теперь возвращает и id
     }
 
     @Override
@@ -66,6 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        log.info("=== ОБНОВЛЕНИЕ КАТЕГОРИИ С ID: {} ===", id);
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -87,7 +93,8 @@ public class CategoryServiceImpl implements CategoryService {
         category.setTitle(request.getTitle());
         Category updatedCategory = categoryRepository.save(category);
 
-        return CategoryResponse.from(updatedCategory);
+        log.info("✅ Категория обновлена");
+        return CategoryResponse.from(updatedCategory);  // ← теперь возвращает и id
     }
 
     @Override

@@ -29,8 +29,7 @@ public class AnnouncementRequest {
     @Schema(description = "Комментарий", example = "Торг уместен")
     private String comment;
 
-    @Schema(description = "ID категорий", example = "[1]")
-    private Set<Long> categoryIds;
-
-    // Файл не включаем в JSON, он будет отдельным part
+    @NotNull(message = "Подкатегория обязательна")
+    @Schema(description = "ID подкатегории", example = "1")
+    private Long subcategoryId;  //
 }

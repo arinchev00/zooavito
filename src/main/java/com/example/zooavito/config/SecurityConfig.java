@@ -60,11 +60,18 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/v1/api/announcement/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/v1/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/api/subcategories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/v1/api/comments/**").permitAll()
 
                         // Эндпоинты с объявлениями - ТРЕБУЮТ АУТЕНТИФИКАЦИИ!
                         .requestMatchers(HttpMethod.POST, "/v1/api/announcement/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/v1/api/announcement/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/v1/api/announcement/**").authenticated()
+
+                        // Эндпоинты с комментариями - ТРЕБУЮТ АУТЕНТИФИКАЦИИ!
+                        .requestMatchers(HttpMethod.POST, "/v1/api/comments/**").authenticated()  // писать могут только авторизованные
+                        .requestMatchers(HttpMethod.PUT, "/v1/api/comments/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/v1/api/comments/**").authenticated()
 
                         // Админские эндпоинты
                         .requestMatchers("/v1/api/admin/**").hasRole("ADMIN")
@@ -73,6 +80,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/v1/api/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/v1/api/categories/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/v1/api/categories/**").hasRole("ADMIN")
+
+                        // Подкатегории - создание/обновление/удаление только для ADMIN
+                        .requestMatchers(HttpMethod.POST, "/v1/api/subcategories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/v1/api/subcategories/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/v1/api/subcategories/**").hasRole("ADMIN")
 
                         // Все остальные требуют аутентификации
                         .anyRequest().authenticated()

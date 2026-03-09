@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,15 +18,22 @@ public class AnnouncementResponse {
     private String description;
     private String comment;
     private LocalDate dateOfPublication;
-    private Set<CategoryResponse> categories;
+    private UserSummaryResponse user;
+    private CategoryResponse category;
+    private SubcategoryResponse subcategory;  // ← только id и title
     private Set<ImageResponse> images;
+    private List<CommentResponse> comments;
+    private long commentsCount;
 
     public static AnnouncementResponse from(Announcement announcement) {
-        Set<CategoryResponse> categoryResponses = null;
-        if (announcement.getCategories() != null) {
-            categoryResponses = announcement.getCategories().stream()
-                    .map(CategoryResponse::from)
-                    .collect(Collectors.toSet());
+        CategoryResponse categoryResponse = null;
+        if (announcement.getCategories() != null && !announcement.getCategories().isEmpty()) {
+            categoryResponse = CategoryResponse.from(announcement.getCategories().iterator().next());
+        }
+
+        SubcategoryResponse subcategoryResponse = null;
+        if (announcement.getSubcategories() != null && !announcement.getSubcategories().isEmpty()) {
+            subcategoryResponse = SubcategoryResponse.from(announcement.getSubcategories().iterator().next());
         }
 
         Set<ImageResponse> imageResponses = null;
@@ -35,6 +43,17 @@ public class AnnouncementResponse {
                     .collect(Collectors.toSet());
         }
 
+        List<CommentResponse> commentResponses = null;
+        long commentsCount = 0;
+        if (announcement.getComments() != null) {
+            commentsCount = announcement.getComments().size();
+            commentResponses = announcement.getComments().stream()
+                    .sorted((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()))
+                    .limit(5)
+                    .map(CommentResponse::from)
+                    .collect(Collectors.toList());
+        }
+
         return AnnouncementResponse.builder()
                 .id(announcement.getId())
                 .title(announcement.getTitle())
@@ -42,8 +61,12 @@ public class AnnouncementResponse {
                 .description(announcement.getDescription())
                 .comment(announcement.getComment())
                 .dateOfPublication(announcement.getDateOfPublication())
-                .categories(categoryResponses)
+                .user(UserSummaryResponse.from(announcement.getUser()))
+                .category(categoryResponse)
+                .subcategory(subcategoryResponse)  // ← чистый объект
                 .images(imageResponses)
+                .comments(commentResponses)
+                .commentsCount(commentsCount)
                 .build();
     }
 }

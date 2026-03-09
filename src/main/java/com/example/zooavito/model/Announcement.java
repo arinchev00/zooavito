@@ -31,14 +31,28 @@ public class Announcement {
     @Column(name = "date_of_publication")
     private LocalDate DateOfPublication;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @ManyToMany
     @JoinTable(name = "announcement_categories",
             joinColumns = @JoinColumn(name = "announcement_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
+    @ManyToMany
+    @JoinTable(name = "announcement_subcategories",
+            joinColumns = @JoinColumn(name = "announcement_id"),
+            inverseJoinColumns = @JoinColumn(name = "subcategory_id"))
+    private Set<Subcategory> subcategories = new HashSet<>();
+
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Image> images = new HashSet<>();
+
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("createdAt DESC")
+    private Set<Comment> comments = new HashSet<>();
 
     @Override
     public boolean equals(Object o) {
